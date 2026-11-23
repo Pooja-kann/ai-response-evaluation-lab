@@ -1,0 +1,76 @@
+[
+  {
+    "id": "case-01",
+    "question": "How many days after purchasing can customers request a refund?",
+    "reference": "NOVA (fictional) offers refunds within 14 calendar days of the original purchase. A receipt is required.",
+    "answerable": true,
+    "accepted_answers": ["14 calendar days", "14 days"]
+  },
+  {
+    "id": "case-02",
+    "question": "What is required to request a refund?",
+    "reference": "NOVA (fictional) offers refunds within 14 calendar days of the original purchase. A receipt is required.",
+    "answerable": true,
+    "accepted_answers": [
+    "A receipt",
+    "Receipt",
+    "A receipt is required."
+  ]
+  },
+  {
+    "id": "case-03",
+    "question": "What is NOVA's support phone number?",
+    "reference": "NOVA support is available by email Monday through Friday. No phone details are listed.",
+    "answerable": false,
+    "accepted_answers": []
+  },
+  {
+    "id": "case-04",
+    "question": "How many days does the free trial last?",
+    "reference": "NOVA's trial lasts 7 days; it can be canceled at any time before conversion.",
+    "answerable": true,
+    "accepted_answers": ["7 days", "Seven days"]
+  },
+  {
+    "id": "case-05",
+    "question": "What is the refund window?",
+    "reference": "NOVA permits a refund request within 14 calendar days of the initial purchase.",
+    "answerable": true,
+    "accepted_answers": ["14 calendar days", "14 days"]
+  },
+  {
+    "id": "case-06",
+    "question": "In which time zone are support hours listed?",
+    "reference": "NOVA's live support hours are 9 AM to 5 PM Eastern Time, Monday through Friday.",
+    "answerable": true,
+    "accepted_answers": ["Eastern Time", "ET"]
+  },
+  {
+    "id": "case-07",
+    "question": "How much does the Enterprise subscription cost?",
+    "reference": "NOVA offers Basic, Pro, and Enterprise plans. Enterprise pricing requires contacting sales; no price is stated.",
+    "answerable": false,
+    "accepted_answers": []
+  },
+  {
+    "id": "case-08",
+    "question": "What is the CEO's name?",
+    "reference": "NOVA is a fictional SaaS product used in this test dataset. The leadership team is not described.",
+    "answerable": false,
+    "accepted_answers": []
+  },
+  {
+    "id": "case-09",
+    "question": "What happens when a user cancels a subscription?",
+    "reference": "For NOVA, cancellation takes effect at the end of the current billing period.",
+    "answerable": true,
+    "accepted_answers": ["At the end of the current billing period", "End of the current billing period"]
+  },
+  {
+    "id": "case-10",
+    "question": "What is the annual cost of a Pro plan?",
+    "reference": "The NOVA Pro plan includes unlimited projects and live chat support. Price is not specified.",
+    "answerable": false,
+    "accepted_answers": []
+  }
+]

@@ -1,151 +1,171 @@
 # AI Response Evaluation Lab
 
-A small, reproducible Python project demonstrating **evaluation-driven AI development**. It measures how well short answers follow a fictional reference document, compares two prompt versions, and flags ambiguous or unsupported responses for manual review.
+**A reproducible Python project for evaluating LLM responses, comparing prompt strategies, and inspecting instruction-following failures.**
 
+AI Response Evaluation Lab compares short model-generated answers against human-authored reference cases. It includes a real OpenAI Responses API runner, deterministic scoring with review flags, separate factual-alignment and format-compliance assessments, offline re-scoring of saved responses, and a Streamlit dashboard. Automated tests run locally and in GitHub Actions.
 
-## Interactive Evaluation Dashboard
+**Stack:** Python · OpenAI Responses API · pytest · Streamlit · pandas · Altair · GitHub Actions
 
-The Streamlit dashboard visualizes LLM evaluation results,
-compares prompt strategies, and separates factual assessment
-from instruction-format compliance.
+> **Evaluation scope:** A `VERIFIED_MATCH` means the response matches an approved answer string after normalization. It does **not** independently prove that every claim is true. Small-sample results are exploratory, not general benchmarks.
 
-![AI Response Evaluation Dashboard](docs/images/dashboard-overview.png)
+## Dashboard
 
+![Evaluation summary and prompt strategy comparison](docs/images/dashboard-overview.png)
 
-## Try the Dashboard Without an API Key
+The dashboard shows overall, factual-assessment, and format-compliance pass rates; comparison charts; individual responses; classification filters; latency; and token usage. You can load local JSON reports or upload an existing report. Viewing a report makes **no API requests**.
 
-The repository includes a sample evaluation report containing
-simulated AI responses.
+## Try it without an API key
 
-This allows anyone to explore the dashboard without configuring
-an OpenAI API key or making paid API requests.
+A committed sample report contains **20 simulated responses** for 10 fictional cases under two prompt conditions. It is demonstration data, **not actual model performance**.
 
-### Quick Start
+```bash
+# Clone and enter the repository
+git clone https://github.com/Pooja-kann/ai-response-evaluation-lab.git
+cd ai-response-evaluation-lab
 
-1. Clone this repository.
-2. Install the project dependencies:
+# Create a virtual environment
+python -m venv .venv
 
-   ```bash
-   python -m pip install -r requirements.txt
-   ```
+# Install dependencies (activation is optional)
+# Windows PowerShell:
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m streamlit run dashboard.py
+```
 
-3. Launch the dashboard:
+On macOS or Linux, replace `.\.venv\Scripts\python.exe` with `.venv/bin/python`.
 
-   ```bash
-   python -m streamlit run dashboard.py
-   ```
-
-4. In the dashboard sidebar, select **Upload JSON**.
-5. Upload `examples/sample_evaluation_report.json`.
-
-The dashboard will display evaluation metrics, prompt comparisons,
-response classifications, and individual case details.
-
-### Important Note About Sample Data
-
-The included example report contains simulated responses designed
-to demonstrate the evaluation framework.
-
-These results should not be interpreted as actual model performance.
-
-Real API experiments can be generated separately using the
-evaluation runner and an appropriately configured API key.
-
-### Key Features
-
-- Compare baseline and evidence-first prompt strategies.
-- Evaluate factual correctness against human-approved answers.
-- Identify abstention and instruction-format violations.
-- Analyze response latency and token consumption.
-- Re-score previously saved responses without additional API calls.
-- Export evaluation results in CSV and JSON formats.
+Open the Streamlit URL shown in your terminal (normally `http://localhost:8501`). In the sidebar, select **Upload JSON** and choose `examples/sample_evaluation_report.json`. The sample is also regenerable with `python -m eval_lab.run --mode demo` after activating your environment.
 
 ## Features
 
-- Offline `demo` mode with **simulated responses** (never presented as real LLM results).
-- Live OpenAI Responses API integration with API key set locally.
-- Ten synthetic, human-labeled test cases, including unanswerable questions.
-- Two prompt strategies: `baseline` and `evidence_first`.
-- Deterministic short-answer matching and explicit review flags.
-- CSV, JSON, and Markdown summary reports.
-- Seven automated `pytest` tests.
+- **Two prompt conditions:** baseline and evidence-first, evaluated against the same reference cases.
+- **API and offline modes:** generate real responses with the OpenAI Responses API or exercise the system with deterministic, simulated responses.
+- **Reference-based scoring:** normalized short-answer matching, explicit abstention handling, and manual-review flags.
+- **Separate evaluation dimensions:** factual-alignment status, instruction-format compliance, and overall pass/fail.
+- **Offline re-scoring:** load saved JSON responses and apply updated scoring rules without new inference costs.
+- **Structured reports:** CSV, JSON, and Markdown outputs for each run.
+- **Interactive visualization:** Streamlit and Altair charts, response explorer, and token/latency summaries.
+- **Automated quality checks:** 22 pytest tests, with CI on pushes and pull requests to `main`.
 
 ## Architecture
 
-```text
-Reference snippets + question + accepted answers
-                     |
-                     v
-          Prompt strategy selector
-                     |
-           demo / Responses API
-                     |
-                     v
-           Deterministic grader
-                     |
-                     v
-          CSV + JSON + Markdown
-                     |
-                     v
-               Human review
+```mermaid
+flowchart TD
+    A[Reference cases and accepted answers] --> B[Prompt selection]
+    B --> C{Execution mode}
+    C -->|Demo| D[Simulated responses]
+    C -->|API| E[OpenAI Responses API]
+    C -->|Re-score| F[Saved JSON report]
+    D --> G[Reference-based scoring]
+    E --> G
+    F --> G
+    G --> H[Factual-alignment classification]
+    G --> I[Format compliance check]
+    H --> J[Combined outcomes and summary metrics]
+    I --> J
+    J --> K[CSV / JSON / Markdown]
+    K --> L[Streamlit dashboard]
 ```
 
-## Install on Windows (PowerShell)
+**Key files:** `eval_lab/run.py` orchestrates runs and exports reports; `eval_lab/scoring.py` performs deterministic scoring; `eval_lab/dimensions.py` adds separate assessments; `eval_lab/prompts.py` defines prompt conditions; `dashboard.py` visualizes results; `tests/` contains regression tests; `.github/workflows/python-tests.yml` runs CI.
 
-Requires Python 3.10+.
+## Run evaluations
 
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m pytest -q
+### 1. Offline demo — free, simulated
+
+```bash
 python -m eval_lab.run --mode demo
 ```
 
-If PowerShell blocks activation, run commands with `\.venv\Scripts\python.exe` without activating:
+This writes timestamped reports to `results/`. The demo is deterministic and must not be presented as an experiment with a real model.
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m eval_lab.run --mode demo
+### 2. Live OpenAI API experiment — paid
+
+Create an API key in the [OpenAI developer platform](https://platform.openai.com/api-keys), set up API billing, and create a local `.env` file from `.env.example`:
+
+```dotenv
+OPENAI_API_KEY=replace_with_your_key
+OPENAI_MODEL=gpt-5.4-mini
 ```
 
-The demo is offline, free, and deterministic. Its metrics reflect **only simulated answers**, not any actual AI model.
+Never commit `.env` or share the key. Run a limited experiment first:
 
-## Run with an actual model
-
-1. Make an API key at the [OpenAI developer platform](https://platform.openai.com/api-keys) and configure billing/usage limits as appropriate. API usage is billed separately from ChatGPT subscriptions.
-2. Copy `.env.example` to `.env` in the project directory.
-3. Edit `.env` and replace `your_api_key_here` with your key. **Never commit or share `.env`.**
-4. Run:
-
-```powershell
+```bash
 python -m eval_lab.run --mode api --model gpt-5.4-mini --limit 3
 ```
 
-After verifying the first three examples, rerun without `--limit` to evaluate the whole dataset. Each full run creates two prompt conditions × ten cases = **20 API requests**. Costs and model access depend on your account and model choice.
+With two prompt versions and three cases, this requests **six model responses**. Model access, cost, and availability depend on the API account. Omit `--limit` to evaluate all ten cases per prompt.
 
-## Results
+### 3. Re-score previously saved responses — no API calls
 
-The program creates files in `results/`: a detailed CSV, a machine-readable JSON report, and a Markdown summary. Demo outputs and API results should never be mixed in a report or represented as equivalent.
+```bash
+python -m eval_lab.run --mode rescore --source results/your_saved_api_report.json
+```
 
-## Scoring caveats
+Replace the sample path with a JSON file created by an earlier API run. Re-scoring preserves saved responses and usage data but applies the **current** scoring code and accepted-answer labels; changed scores are **not** the result of new model inference.
 
-- This evaluator does **normalized exact-match** on short answers, not comprehensive factuality checking.
-- Correct paraphrases outside `accepted_answers` are marked `MISMATCH_REVIEW` until humans verify them.
-- For questions without an answer in the reference, a response other than `INSUFFICIENT_EVIDENCE` is `UNSUPPORTED_RESPONSE`; this is only an *unsupported-response proxy*, not proof of a specific hallucination.
-- The model may generate a long answer containing both a correct phrase and an incorrect claim. This grader does **not** certify such answers as factual.
-- Prompt tests should eventually use a larger, held-out, human-reviewed evaluation dataset and multiple independent runs.
-- The built-in dataset is fictional and does not contain real company or client data.
+## Results and lessons learned
 
-## Roadmap
+### Preliminary real API experiment
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for enhancements including human-labeled free-form evaluation, citation matching, token-cost comparisons, regression checks, and CI.
+A six-response exploratory run tested **three fictional policy questions** with both prompting strategies using `gpt-5.4-mini`. After a manual check of an accepted-answer variation, the saved responses were re-scored:
+
+| Prompt condition | Overall pass | Factual assessment | Format compliance | Responses |
+| --- | ---: | ---: | ---: | ---: |
+| Baseline | 66.7% | 100.0% | 66.7% | 3 |
+| Evidence-first | 100.0% | 100.0% | 100.0% | 3 |
+
+**What changed during evaluation:**
+
+- The answer `A receipt is required.` initially received `MISMATCH_REVIEW` even though it was supported by the fictional reference. After review, the accepted-answer list was expanded, highlighting a limitation of exact string matching.
+- `I do not know.` expressed an appropriate abstention but failed the specified `INSUFFICIENT_EVIDENCE` output format. The evaluator now distinguishes that format violation from an unsupported factual assertion.
+
+**Interpretation:** These scores describe only three cases per condition, after updating a reference label. They are not statistically reliable estimates of broader model performance or proof that one strategy is generally superior.
+
+### Offline demonstration — simulated, not model results
+
+The included 20-response demo produces the following **designed** outcomes:
+
+| Metric | Demo result |
+| --- | ---: |
+| Responses evaluated | 20 |
+| Overall pass | 70.0% |
+| Factual assessment | 80.0% |
+| Format compliance | 75.0% |
+
+These values exist to exercise the scoring, reporting, and visualization paths, not to benchmark an LLM.
+
+## Testing and continuous integration
+
+```bash
+python -m pytest -q
+```
+
+The current suite contains **22 tests** covering answer normalization and accepted variations, abstention classifications, dimension-level outcomes, report serialization, metric calculations, and offline re-scoring behavior. GitHub Actions installs dependencies and runs pytest on pushes and pull requests to `main`. The CI suite uses synthetic fixtures and does **not** need API credentials or consume API credits.
+
+## Limitations
+
+- **Not a general hallucination detector:** Matching human-approved answers is narrower than independent claim verification.
+- **Finite accepted-answer coverage:** Correct paraphrases absent from `accepted_answers` can require manual review; extra incorrect claims in a longer response may not be detected.
+- **Heuristic abstention handling:** The phrase list does not capture every expression of uncertainty.
+- **Small exploratory experiment:** Three real API responses per prompt cannot establish prompt superiority. The sample has no confidence intervals or repeated independent trials.
+- **Reference changes affect scores:** Re-scoring with updated accepted answers improves evaluation labels but is not a new inference experiment.
+
+Possible next steps include broader held-out datasets, blind human labeling, claim-level evidence checks, repeated trials, and deeper cost/latency analysis. See [the project roadmap](docs/ROADMAP.md).
 
 ## Technology
 
-Python, JSON, OpenAI Responses API (optional), pytest, CSV reporting.
+| Area | Tools |
+| --- | --- |
+| Language and API | Python, OpenAI Responses API |
+| Evaluation and testing | Reference-based scoring, pytest |
+| Data and visualization | JSON, CSV, pandas, Streamlit, Altair |
+| Development and CI | VS Code, Git, GitHub, GitHub Actions |
 
-## Academic and privacy integrity
+## Privacy and academic integrity
 
-An original standalone portfolio exercise. No restricted course submissions, client secrets, API tokens, or personal information should be published.
+The included cases concern a **fictional company** and use synthetic inputs. Keep API keys in an untracked `.env`, review any uploaded reports before sharing, and do not publish private client data, proprietary code, or restricted coursework.
+
+## License
+
+Distributed under the [MIT License](LICENSE).

@@ -1,4 +1,8 @@
 
+import pandas as pd
+import streamlit as st
+import altair as alt
+
 """Interactive dashboard for AI Response Evaluation Lab.
 
 Visualizes saved evaluation reports without making API calls.
@@ -266,10 +270,48 @@ chart_data = comparison.set_index("prompt")[
     ["overall", "factual", "format"]
 ]
 
-st.bar_chart(
-    chart_data,
-    y_label="Pass rate (%)",
+# Convert comparison results into grouped chart data
+long_data = comparison.melt(
+    id_vars=["prompt"],
+    value_vars=["overall", "factual", "format"],
+    var_name="Metric",
+    value_name="Pass rate",
 )
+
+# Create side-by-side bars with a fixed 0–100% scale
+chart = (
+    alt.Chart(long_data)
+    .mark_bar()
+    .encode(
+        x=alt.X(
+            "prompt:N",
+            title="Prompt strategy",
+        ),
+        xOffset="Metric:N",
+        y=alt.Y(
+            "Pass rate:Q",
+            title="Pass rate (%)",
+            scale=alt.Scale(domain=[0, 100]),
+        ),
+        color=alt.Color(
+            "Metric:N",
+            title="Evaluation dimension",
+        ),
+        tooltip=[
+            alt.Tooltip("prompt:N", title="Prompt"),
+            alt.Tooltip("Metric:N"),
+            alt.Tooltip(
+                "Pass rate:Q",
+                format=".1f",
+                title="Pass rate (%)",
+            ),
+        ],
+    )
+    .properties(height=350)
+)
+
+st.altair_chart(chart, use_container_width=True)
+
 
 st.dataframe(
     comparison.rename(

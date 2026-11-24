@@ -2,6 +2,24 @@
 
 A small, reproducible Python project demonstrating **evaluation-driven AI development**. It measures how well short answers follow a fictional reference document, compares two prompt versions, and flags ambiguous or unsupported responses for manual review.
 
+
+## Interactive Evaluation Dashboard
+
+The Streamlit dashboard visualizes LLM evaluation results,
+compares prompt strategies, and separates factual assessment
+from instruction-format compliance.
+
+![AI Response Evaluation Dashboard](docs/images/dashboard-overview.png)
+
+### Key Features
+
+- Compare baseline and evidence-first prompt strategies.
+- Evaluate factual correctness against human-approved answers.
+- Identify abstention and instruction-format violations.
+- Analyze response latency and token consumption.
+- Re-score previously saved responses without additional API calls.
+- Export evaluation results in CSV and JSON formats.
+
 ## Features
 
 - Offline `demo` mode with **simulated responses** (never presented as real LLM results).

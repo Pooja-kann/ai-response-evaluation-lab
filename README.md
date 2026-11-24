@@ -11,6 +11,46 @@ from instruction-format compliance.
 
 ![AI Response Evaluation Dashboard](docs/images/dashboard-overview.png)
 
+
+## Try the Dashboard Without an API Key
+
+The repository includes a sample evaluation report containing
+simulated AI responses.
+
+This allows anyone to explore the dashboard without configuring
+an OpenAI API key or making paid API requests.
+
+### Quick Start
+
+1. Clone this repository.
+2. Install the project dependencies:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+
+3. Launch the dashboard:
+
+   ```bash
+   python -m streamlit run dashboard.py
+   ```
+
+4. In the dashboard sidebar, select **Upload JSON**.
+5. Upload `examples/sample_evaluation_report.json`.
+
+The dashboard will display evaluation metrics, prompt comparisons,
+response classifications, and individual case details.
+
+### Important Note About Sample Data
+
+The included example report contains simulated responses designed
+to demonstrate the evaluation framework.
+
+These results should not be interpreted as actual model performance.
+
+Real API experiments can be generated separately using the
+evaluation runner and an appropriately configured API key.
+
 ### Key Features
 
 - Compare baseline and evidence-first prompt strategies.
